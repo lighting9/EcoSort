@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-   <script src="./tf.min.js"></script>
-    <script src="./teachablemachine-image.min.js"></script> 
+  <!-- <script src="./tf.min.js"></script>
+    <script src="./teachablemachine-image.min.js"></script> -->
 
     <style>
         :root {
@@ -256,15 +256,14 @@
 <script type="text/javascript">
     
     // Replace your local path variables with your Teachable Machine cloud project link
-  //  const tmCloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/";
-
-  //  const modelURL = tmCloudURL + "model.json";
-  //  const metadataURL = tmCloudURL + "metadata.json";
-
+    const tmCloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/";
+    const modelURL = tmCloudURL + "model.json";
+    const metadataURL = tmCloudURL + "metadata.json";
 
 
-   const modelURL = window.location.origin + "/model.json";
-   const metadataURL = window.location.origin + "/metadata.json";
+
+ //  const modelURL = window.location.origin + "/model.json";
+ //  const metadataURL = window.location.origin + "/metadata.json";
 
     let model, webcam, maxPredictions;
     let isLive = false;
