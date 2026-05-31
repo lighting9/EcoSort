@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoScan AI - Smart Waste Segregation Hub</title>
+    <title>EcoSort - Smart Waste Segregation Guide</title>
     <link rel="icon" href="data:,">
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-   <!--  <script src="./tf.min.js"></script>
-    <script src="./teachablemachine-image.min.js"></script>  -->
+   <script src="./tf.min.js"></script>
+    <script src="./teachablemachine-image.min.js"></script> 
 
     <style>
         :root {
@@ -231,7 +231,7 @@
         <div class="logo-area">
             <span>🌿</span> EDGESCAN PROJECT
         </div>
-        <h1>EcoScan AI</h1>
+        <h1>EcoSort</h1>
         <div class="tagline">Real-Time Household Waste Segregator</div>
     </div>
 
@@ -256,15 +256,15 @@
 <script type="text/javascript">
     
     // Replace your local path variables with your Teachable Machine cloud project link
-    const tmCloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/";
+  //  const tmCloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/";
 
-    const modelURL = tmCloudURL + "model.json";
-    const metadataURL = tmCloudURL + "metadata.json";
+  //  const modelURL = tmCloudURL + "model.json";
+  //  const metadataURL = tmCloudURL + "metadata.json";
 
 
 
-   // const modelURL = window.location.origin + "/model.json";
-   // const metadataURL = window.location.origin + "/metadata.json";
+   const modelURL = window.location.origin + "/model.json";
+   const metadataURL = window.location.origin + "/metadata.json";
 
     let model, webcam, maxPredictions;
     let isLive = false;
