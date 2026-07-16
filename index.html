@@ -271,7 +271,7 @@
     // Environmental mapping matching your exact 10 trained classes
     const wasteRules = {
         "peels": { stream: "Wet Waste (Organic Compost)", bin: "Green Bin", color: "#10b981", bg: "#e6f4ea", icon: "🍏" },
-        "biological waste": { stream: "Wet Waste (Organic Compost)", bin: "Green Bin", color: "#10b981", bg: "#e6f4ea", icon: "🍂" },
+        "biological": { stream: "Wet Waste (Organic Compost)", bin: "Green Bin", color: "#10b981", bg: "#e6f4ea", icon: "🍂" },
         
         "paper": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "📦" },
         "cardboard": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "📦" },
@@ -282,6 +282,9 @@
         
         "e waste": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin", color: "#d97706", bg: "#fffbeb", icon: "🔌" },
         "battery": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin", color: "#d97706", bg: "#fffbeb", icon: "🔋" }
+        "pen": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin (Plastic/Ink)", color: "#d97706", bg: "#fffbeb", icon: "🖊️" },
+    "pencil": { stream: "Dry Waste (Wood/Graphite)", bin: "General Waste Bin", color: "#4b5563", bg: "#f3f4f6", icon: "✏️" },
+    "Scissors": { stream: "Dry Waste (Recyclable Metal/Plastic)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "✂️" }
     };
 
     async function init() {
