@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoScan AI - Smart Waste Segregation Hub</title>
+    <link rel="icon" href="data:,">
+
+    <script src="./tf.min.js"></script>
+    <script src="./teachablemachine-image.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #10b981;
+            --dark-forest: #064e3b;
+            --leaf-light: #e6f4ea;
+            --neutral-bg: #f4f7f5;
+            --card-shadow: 0 20px 40px rgba(6, 78, 59, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #e8f5e9 0%, var(--neutral-bg) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1f2937;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            text-align: center;
+        }
+
+        .brand-header {
+            margin-bottom: 25px;
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--leaf-light);
+            color: var(--dark-forest);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .logo-area span {
+            margin-right: 6px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: var(--dark-forest);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .camera-viewport-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #111827;
+            border: 3px solid #ffffff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            aspect-ratio: 4 / 3;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .result-card {
+            background: #fafbfb;
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid #f0f2f1;
+            text-align: left;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* Interactive Buttons styling */
+        .action-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #4b5563;
+            box-shadow: 0 4px 12px rgba(75, 85, 99, 0.2);
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* --- Floating Classification Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 78, 59, 0.4); 
+            backdrop-filter: blur(8px);
+            display: none; /* Controlled via JS */
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 2px solid var(--primary-green);
+            position: relative;
+            text-align: left;
+            transform: scale(0.9);
+            animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f3f4f6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            color: #4b5563;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="result-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="resetToLiveCamera()">✕</button>
+        <div id="modal-body-content">
+            </div>
+    </div>
+</div>
+
+<div class="dashboard">
+    <div class="brand-header">
+        <div class="logo-area">
+            <span>🌿</span> PROJECT ECO-SORT
+        </div>
+        <h1>EcoScan AI</h1>
+        <div class="tagline">Real-Time Household Waste Segregator</div>
+    </div>
+
+    <div class="camera-viewport-wrapper">
+        <div class="live-badge" id="camera-status-badge" style="display:none;">Live View</div>
+        <div id="webcam-container" style="color: #9ca3af; padding-top: 22%; font-size: 14px;">Camera Not Initialized</div>
+    </div>
+
+    <div id="result-display" class="result-card">
+        <div class="result-title">System Diagnostics</div>
+        <p style="color:#6b7280; font-size: 14px;">Warming up core classification libraries...</p>
+    </div>
+
+    <div id="control-panel">
+        </div>
+
+    <div class="footer-note">
+        🔒 Secure Local Edge Architecture • 0% Cloud Compute
+    </div>
+</div>
+
+<script type="text/javascript">
+    const modelURL = window.location.origin + "/model.json";
+    const metadataURL = window.location.origin + "/metadata.json";
+
+    let model, webcam, maxPredictions;
+    let isLive = false;
+
+    // Focused waste rules including school/office stationery additions
+    const wasteRules = {
+        "pen": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin (Plastic/Ink)", color: "#d97706", bg: "#fffbeb", icon: "🖊️" },
+        "pencil": { stream: "Dry Waste (Wood/Graphite)", bin: "General Waste Bin", color: "#4b5563", bg: "#f3f4f6", icon: "✏️" },
+        "scissors": { stream: "Dry Waste (Recyclable Metal/Plastic)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "✂️" }
+    };
+
+    async function init() {
+        const resultDisplay = document.getElementById("result-display");
+        const controlPanel = document.getElementById("control-panel");
+        try {
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+
+            webcam = new tmImage.Webcam(400, 300, false); 
+            
+            resultDisplay.innerHTML = `
+                <div class="result-title" style="color: #10b981;">Model Active</div>
+                <p style="color: #374151; font-size: 14px;">The neural network weights loaded correctly. Wake up your back camera feed below.</p>
+            `;
+
+            controlPanel.innerHTML = `
+                <button class="action-btn" onclick="startCameraStream()">Activate Camera Feed</button>
+            `;
+        } catch (error) {
+            resultDisplay.innerHTML = `
+                <div class="result-title" style="color:#ef4444;">Initialization Halted</div>
+                <p style="color: #ef4444; font-family: monospace; font-size: 11px; text-align: left; background: #fff; padding: 10px; border-radius: 6px; margin-top: 10px;">
+                    ${error.message || error}
+                </p>
+            `;
+        }
+    }
+
+    async function startCameraStream() {
+        const resultDisplay = document.getElementById("result-display");
+        const controlPanel = document.getElementById("control-panel");
+        const container = document.getElementById("webcam-container");
+        
+        try {
+            container.innerHTML = "Accessing lens device driver...";
+            
+            await webcam.setup({ facingMode: "environment" }); 
+            await webcam.play();
+            
+            isLive = true;
+            document.getElementById("camera-status-badge").style.display = "flex";
+            document.getElementById("camera-status-badge").style.background = "rgba(239, 68, 68, 0.9)";
+            document.getElementById("camera-status-badge").innerText = "Live View";
+
+            container.innerHTML = ""; 
+            container.appendChild(webcam.canvas);
+            
+            resultDisplay.innerHTML = `
+                <div class="result-title">System Ready</div>
+                <p style="color: #10b981; font-weight: 600; font-size: 14px;">📸 Target your item and press 'Scan Object Snapshot'.</p>
+            `;
+
+            controlPanel.innerHTML = `
+                <button class="action-btn" onclick="captureSnapshot()">Scan Object Snapshot</button>
+            `;
+
+            window.requestAnimationFrame(previewLoop);
+        } catch (err) {
+            resultDisplay.innerHTML = `
+                <div class="result-title" style="color:#ef4444;">Camera Claim Aborted</div>
+                <p style="color: #ef4444; font-size: 13px;">Error: ${err.message || err}</p>
+            `;
+        }
+    }
+
+    function previewLoop() {
+        if (isLive) {
+            webcam.update();
+            window.requestAnimationFrame(previewLoop);
+        }
+    }
+
+    async function captureSnapshot() {
+        isLive = false;
+        webcam.pause();
+
+        const resultDisplay = document.getElementById("result-display");
+        const controlPanel = document.getElementById("control-panel");
+        const badge = document.getElementById("camera-status-badge");
+        const modal = document.getElementById("result-modal");
+        const modalContent = document.getElementById("modal-body-content");
+
+        badge.style.background = "#4b5563";
+        badge.innerText = "Frame Frozen";
+
+        resultDisplay.innerHTML = `
+            <div class="result-title">Analysis Complete</div>
+            <p style="color:#6b7280; font-size: 14px;">Results are displayed in the active modal overlay.</p>
+        `;
+
+        const prediction = await model.predict(webcam.canvas);
+        
+        let topMatch = { className: "", probability: 0 };
+        for (let i = 0; i < maxPredictions; i++) {
+            if (prediction[i].probability > topMatch.probability) {
+                topMatch = prediction[i];
+            }
+        }
+
+        const detectedClass = topMatch.className.toLowerCase().trim();
+
+        if (topMatch.probability < 0.55) {
+            modalContent.innerHTML = `
+                <div class="result-title" style="color: #ef4444;">Analysis Negative</div>
+                <p style="color:#4b5563; font-size: 15px; margin-top: 10px; line-height: 1.5;">
+                    No recognizable waste classes detected inside the frame limits. Please realign the item.
+                </p>
+            `;
+        } else {
+            let rule = wasteRules[detectedClass] || { stream: "General Non-Recyclable", bin: "Landfill Bin", color: "#4b5563", bg: "#f3f4f6", icon: "🗑️" };
+            
+            modalContent.innerHTML = `
+                <div class="result-title" style="color: ${rule.color}">AI Classification Match</div>
+                <div class="main-prediction" style="margin-top: 10px;">
+                    <div class="class-text" style="font-size: 24px; font-weight: 700; text-transform: capitalize; color: var(--dark-forest);">${topMatch.className}</div>
+                    <div class="confidence-pill" style="background: ${rule.color}; display: inline-block; padding: 4px 12px; border-radius: 50px; color: white; font-size: 12px; font-weight: 600; margin-top: 5px;">
+                        ${(topMatch.probability * 100).toFixed(0)}% Match
+                    </div>
+                </div>
+                
+                <div class="stream-info" style="display: flex; align-items: center; gap: 15px; background: ${rule.bg}; padding: 16px; border-radius: 16px; border: 1px solid ${rule.color}; margin-top: 20px;">
+                    <div class="bin-icon" style="font-size: 32px;">${rule.icon}</div>
+                    <div class="stream-details">
+                        <p style="font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 600;">Disposal Guidelines</p>
+                        <p style="font-size: 16px; font-weight: 700; color: ${rule.color}; margin-top: 2px;">
+                            ${rule.stream} &rarr; <span style="text-decoration: underline;">${rule.bin}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        modal.style.display = "flex";
+
+        controlPanel.innerHTML = `
+            <button class="action-btn btn-secondary" onclick="resetToLiveCamera()">Reset & Unfreeze Camera</button>
+        `;
+    }
+
+    function closeModal() {
+        document.getElementById("result-modal").style.display = "none";
+    }
+
+    async function resetToLiveCamera() {
+        closeModal(); 
+        
+        const resultDisplay = document.getElementById("result-display");
+        const controlPanel = document.getElementById("control-panel");
+        const badge = document.getElementById("camera-status-badge");
+
+        webcam.play();
+        isLive = true;
+        
+        badge.style.background = "rgba(239, 68, 68, 0.9)";
+        badge.innerText = "Live View";
+
+        resultDisplay.style.borderColor = "#f0f2f1";
+        resultDisplay.style.background = "#fafbfb";
+        resultDisplay.innerHTML = `
+            <div class="result-title">System Ready</div>
+            <p style="color: #10b981; font-weight: 600; font-size: 14px;">📸 Target your item and press 'Scan Object Snapshot'.</p>
+        `;
+
+        controlPanel.innerHTML = `
+            <button class="action-btn" onclick="captureSnapshot()">Scan Object Snapshot</button>
+        `;
+
+        window.requestAnimationFrame(previewLoop);
+    }
+
+    init();
+</script>
+</body>
+</html>
