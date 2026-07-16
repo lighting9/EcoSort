@@ -6,8 +6,8 @@
     <title>EcoScan AI - Smart Waste Segregation Hub</title>
     <link rel="icon" href="data:,">
 
-    <script src="./tf.min.js"></script>
-    <script src="./teachablemachine-image.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
 
     <style>
         :root {
@@ -273,19 +273,40 @@
 </div>
 
 <script type="text/javascript">
-    const modelURL = window.location.origin + "/model.json";
-    const metadataURL = window.location.origin + "/metadata.json";
+// Paste your Teachable Machine shareable link here:
+const cloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/"; 
+
+const modelURL = cloudURL + "model.json";
+const metadataURL = cloudURL + "metadata.json";
 
     let model, webcam, maxPredictions;
     let isLive = false;
 
-    // Focused waste rules including school/office stationery additions
+  // Complete Master Mapping: All Organic, Recyclable, E-Waste, and Office Stationery items
     const wasteRules = {
+        // --- WET WASTE / ORGANIC ---
+        "peels": { stream: "Wet Waste (Organic Compost)", bin: "Green Bin", color: "#10b981", bg: "#e6f4ea", icon: "🍏" },
+        "biological waste": { stream: "Wet Waste (Organic Compost)", bin: "Green Bin", color: "#10b981", bg: "#e6f4ea", icon: "🍂" },
+        
+        // --- DRY WASTE / RECYCLABLES ---
+        "paper": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "📦" },
+        "cardboard": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "📦" },
+        "plastic": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "🥤" },
+        "glass": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "🍾" },
+        "metal": { stream: "Dry Waste (Recyclable)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "🥫" },
+        "clothes": { stream: "Dry Waste (Textiles)", bin: "Blue Bin / Donation", color: "#2563eb", bg: "#eff6ff", icon: "👕" },
+        
+        // --- HAZARDOUS / E-WASTE ---
+        "e waste": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin", color: "#d97706", bg: "#fffbeb", icon: "🔌" },
+        "battery": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin", color: "#d97706", bg: "#fffbeb", icon: "🔋" },
+
+        // --- NEW STATIONERY ITEMS ---
         "pen": { stream: "Domestic Hazardous Waste", bin: "Hazardous Bin (Plastic/Ink)", color: "#d97706", bg: "#fffbeb", icon: "🖊️" },
         "pencil": { stream: "Dry Waste (Wood/Graphite)", bin: "General Waste Bin", color: "#4b5563", bg: "#f3f4f6", icon: "✏️" },
         "scissors": { stream: "Dry Waste (Recyclable Metal/Plastic)", bin: "Blue Bin", color: "#2563eb", bg: "#eff6ff", icon: "✂️" }
     };
 
+    
     async function init() {
         const resultDisplay = document.getElementById("result-display");
         const controlPanel = document.getElementById("control-panel");
