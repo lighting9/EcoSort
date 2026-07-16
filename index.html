@@ -273,9 +273,11 @@
 </div>
 
 <script type="text/javascript">
-    // To host locally, use window.location.origin pathing. To pull from cloud, put your Teachable URL below:
-    const modelURL = window.location.origin + "/model.json";
-    const metadataURL = window.location.origin + "/metadata.json";
+  // Paste your Teachable Machine shareable link here:
+const cloudURL = "https://teachablemachine.withgoogle.com/models/yb-VcpX6y/"; 
+
+const modelURL = cloudURL + "model.json";
+const metadataURL = cloudURL + "metadata.json";
 
     let model, webcam, maxPredictions;
     let isLive = false;
